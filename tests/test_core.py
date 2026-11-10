@@ -151,3 +151,28 @@ def test_midnight_split_and_score(tmp_path, clf):
     assert df["day"].nunique() == 2
     assert df["seconds"].sum() == 7200
     assert productivity_score(df) == pytest.approx(50)  # +2 und -2 je 1 h
+
+
+# ---------------------------------------------------------------- Vorlage für neue Installationen
+@pytest.mark.parametrize("args, expected", [
+    (("FL Studio",), "Musikproduktion"),
+    (("Visual Studio Code",), "Programmieren"),
+    (("Microsoft Excel",), "Office & Dokumente"),
+    (("Adobe Lightroom",), "Design"),
+    (("DaVinci Resolve",), "Video & Content"),
+    (("Slack",), "Kommunikation"),
+    (("Steam",), "Gaming"),
+    (("Safari", None, None, "de.wikipedia.org"), "Nachschlagen"),
+    (("Safari", None, None, "studio.youtube.com"), "Video & Content"),  # nicht „YouTube“
+    (("Safari", None, None, "www.coursera.org"), "Lernen & Studium"),
+    (("Safari", None, None, "docs.google.com"), "Office & Dokumente"),
+])
+def test_template_covers_common_apps(clf, args, expected):
+    assert clf.classify(*args)[0] == expected
+
+
+def test_template_domains_have_no_paths():
+    import tomllib
+    raw = tomllib.loads((ROOT / "rules.toml").read_text())
+    bad = [d for c in raw["category"] for d in c.get("domains", []) if "/" in d]
+    assert not bad, f"Domains dürfen keinen Pfad enthalten (es wird nur der Host verglichen): {bad}"

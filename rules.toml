@@ -4,6 +4,13 @@
 # und wie produktiv sie zählt. Die Regeln werden beim Auswerten
 # angewendet, also gelten Änderungen auch rückwirkend für alte Daten.
 #
+# Das ist eine Vorlage für viele Arbeitsweisen. Passe sie an DICH an:
+# - Was für dich anders zählt, umstufen (z. B. Spiele für Game-Designer).
+# - Deine Apps/Websites ergänzen. Was keiner Regel entspricht, zeigt die
+#   Übersicht unter „Nicht zugeordnet“ – dort siehst du, was noch fehlt.
+# - Kategorien, die du nie brauchst, darfst du einfach stehen lassen:
+#   eine Regel für eine App, die du nicht benutzt, greift nie.
+#
 # productivity:  2 = sehr produktiv, 1 = produktiv, 0 = neutral,
 #               -1 = ablenkend,     -2 = sehr ablenkend
 #
@@ -16,118 +23,228 @@
 # Gewichtung: domain = 3, title = 2, app = 1. Passen mehrere Arten,
 # werden sie addiert. Die Kategorie mit der höchsten Summe gewinnt,
 # bei Gleichstand die, die weiter oben steht.
+#
+# App-Namen: so, wie sie in der Menüleiste stehen. Bei deutscher macOS-
+# Sprache heißen manche Apple-Apps anders („Vorschau“ statt „Preview“),
+# deshalb stehen oft beide Namen drin.
 
 [settings]
 # Pausen-Erkennung, Fenstertitel und Websites stellst du in Zeitwerk unter
 # Einstellungen (⌘,) ein. Hier nur, was es dort nicht gibt:
 sample_interval_seconds = 5
 # Für diese Apps werden weder Titel noch URLs gespeichert:
-private_apps = ["1Password", "Keychain Access", "Schlüsselbundverwaltung"]
+private_apps = ["1Password", "Bitwarden", "KeePassXC", "Passwords", "Passwörter",
+                "Keychain Access", "Schlüsselbundverwaltung"]
 
-[[category]]
-name = "Musikproduktion"
-productivity = 2
-apps = ["FL Studio", "Ableton Live", "Logic Pro", "Logic Pro X", "Bitwig Studio",
-        "Serum", "Kontakt", "Splice", "iZotope RX", "Melodyne"]
-domains = ["splice.com", "kvraudio.com"]
+# ================================================================ Produktiv: Arbeit
 
 [[category]]
 name = "Programmieren"
 productivity = 2
-apps = ["Code", "Visual Studio Code", "Cursor", "Xcode", "CLion", "PyCharm",
-        "IntelliJ IDEA", "Terminal", "iTerm2", "Warp", "Ghostty", "Sublime Text",
-        "Projucer", "Docker Desktop", "TablePlus", "DBeaver"]
-domains = ["github.com", "gitlab.com", "stackoverflow.com", "docs.python.org",
-           "developer.apple.com", "juce.com", "cppreference.com", "en.cppreference.com",
-           "pandas.pydata.org", "streamlit.io"]
+apps = ["Code", "Visual Studio Code", "Cursor", "Zed", "Xcode", "Android Studio",
+        "CLion", "PyCharm", "IntelliJ IDEA", "WebStorm", "PhpStorm", "GoLand", "Rider",
+        "Fleet", "Sublime Text", "Nova", "BBEdit", "Neovim", "MacVim", "Emacs",
+        "Terminal", "iTerm2", "Warp", "Ghostty", "Kitty", "Alacritty", "WezTerm",
+        "Docker Desktop", "OrbStack", "UTM", "Parallels Desktop", "VMware Fusion",
+        "Postman", "Insomnia", "Bruno", "TablePlus", "DBeaver", "DataGrip",
+        "Sequel Ace", "MongoDB Compass", "GitHub Desktop", "Tower", "Fork",
+        "Sourcetree", "SourceTree", "Projucer", "Jupyter", "Anaconda-Navigator",
+        "RStudio", "MATLAB"]
+domains = ["github.com", "github.dev", "gitlab.com", "bitbucket.org", "localhost",
+           "127.0.0.1", "stackoverflow.com", "stackexchange.com", "superuser.com",
+           "developer.mozilla.org", "developer.apple.com", "developer.android.com",
+           "docs.python.org", "pypi.org", "npmjs.com", "nodejs.org", "react.dev",
+           "vuejs.org", "svelte.dev", "nextjs.org", "tailwindcss.com", "getbootstrap.com",
+           "php.net", "go.dev", "rust-lang.org", "docs.rs", "kotlinlang.org",
+           "learn.microsoft.com", "cppreference.com", "pandas.pydata.org", "numpy.org",
+           "streamlit.io", "juce.com", "vercel.com", "netlify.com", "render.com",
+           "console.aws.amazon.com", "console.cloud.google.com", "portal.azure.com",
+           "codepen.io", "codesandbox.io", "replit.com", "regex101.com",
+           "w3schools.com", "geeksforgeeks.org", "freecodecamp.org", "exercism.org",
+           "leetcode.com", "hackerrank.com", "codewars.com", "kaggle.com",
+           "huggingface.co", "colab.research.google.com", "jsfiddle.net"]
 
 [[category]]
-name = "Studium"
+name = "Lernen & Studium"
 productivity = 2
-apps = ["Preview", "Vorschau", "GoodNotes", "Notability", "Anki", "Microsoft Word",
-        "Microsoft Excel", "Microsoft PowerPoint", "Pages", "Numbers", "Keynote", "Zotero"]
+apps = ["Preview", "Vorschau", "GoodNotes", "Notability", "Anki", "Zotero", "Mendeley",
+        "Citavi", "Skim", "PDF Expert", "MarginNote", "LaTeX", "TeXShop", "Texifier",
+        "GeoGebra", "Mathematica", "Wolfram", "Duolingo"]
 # Eigene Uni-/FH-Domain ergänzen (Subdomains wie moodle.… zählen automatisch mit)
 domains = ["moodle.org", "uni.example",
-           "wolframalpha.com", "khanacademy.org", "geogebra.org"]
-titles = ["(?i)vorlesung", "(?i)übung", "(?i)studienbrief", "(?i)\\bskript"]
+           "wolframalpha.com", "khanacademy.org", "geogebra.org", "coursera.org",
+           "edx.org", "udemy.com", "udacity.com", "skillshare.com",
+           "brilliant.org", "duolingo.com", "overleaf.com", "scholar.google.com",
+           "arxiv.org", "researchgate.net", "jstor.org", "sciencedirect.com",
+           "springer.com", "deepl.com", "dict.leo.org", "duden.de", "quizlet.com"]
+titles = ["(?i)vorlesung", "(?i)übung", "(?i)studienbrief", "(?i)\\bskript",
+          "(?i)lecture", "(?i)assignment", "(?i)hausübung"]
 
 [[category]]
-name = "KI-Tools"
+name = "Office & Dokumente"
 productivity = 1
-apps = ["Claude", "ChatGPT"]
-domains = ["claude.ai", "chatgpt.com", "perplexity.ai"]
+apps = ["Microsoft Word", "Microsoft Excel", "Microsoft PowerPoint", "Pages", "Numbers",
+        "Keynote", "LibreOffice", "OnlyOffice", "Google Docs", "Acrobat", "Adobe Acrobat"]
+domains = ["docs.google.com", "sheets.google.com", "slides.google.com",
+           "drive.google.com", "office.com", "onedrive.live.com", "sharepoint.com",
+           "dropbox.com"]
 
 [[category]]
 name = "Notizen & Planung"
 productivity = 1
-apps = ["Notion", "Obsidian", "Notes", "Notizen", "Reminders", "Erinnerungen",
-        "Calendar", "Kalender", "Things", "Todoist"]
-domains = ["notion.so", "calendar.google.com"]
+apps = ["Notion", "Obsidian", "Bear", "Craft", "Logseq", "Evernote", "OneNote",
+        "Microsoft OneNote", "Notes", "Notizen", "Reminders", "Erinnerungen",
+        "Calendar", "Kalender", "Fantastical", "Things", "Things 3", "Todoist",
+        "TickTick", "OmniFocus", "Linear", "Trello", "Asana", "ClickUp", "Miro"]
+domains = ["notion.so", "calendar.google.com", "linear.app", "trello.com", "asana.com",
+           "clickup.com", "miro.com", "todoist.com", "atlassian.net", "monday.com"]
+
+[[category]]
+name = "KI-Tools"
+productivity = 1
+apps = ["Claude", "ChatGPT", "Perplexity", "Copilot"]
+domains = ["claude.ai", "chatgpt.com", "chat.openai.com", "perplexity.ai",
+           "gemini.google.com", "copilot.microsoft.com", "mistral.ai"]
+
+[[category]]
+name = "Nachschlagen"
+productivity = 1
+domains = ["wikipedia.org", "wiktionary.org", "britannica.com"]
+
+# ================================================================ Produktiv: Kreativ
+
+[[category]]
+name = "Musikproduktion"
+productivity = 2
+apps = ["FL Studio", "Ableton Live", "Logic Pro", "Logic Pro X", "GarageBand",
+        "Bitwig Studio", "Cubase", "Pro Tools", "Studio One", "Reaper", "REAPER",
+        "Reason", "Audacity", "Serum", "Kontakt", "Native Access", "Splice",
+        "iZotope RX", "Melodyne", "MuseScore", "Sibelius", "Dorico", "Plugin Manager"]
+domains = ["splice.com", "kvraudio.com", "pluginboutique.com", "native-instruments.com",
+           "loopmasters.com", "landr.com", "distrokid.com", "tunecore.com"]
 
 [[category]]
 name = "Design"
 productivity = 1
-apps = ["Figma", "Adobe Photoshop", "Adobe Illustrator", "Affinity Designer",
-        "Affinity Photo", "Pixelmator Pro", "Blender", "TouchDesigner"]
-domains = ["figma.com"]
+apps = ["Figma", "Sketch", "Framer", "Adobe Photoshop", "Adobe Illustrator",
+        "Adobe InDesign", "Adobe XD", "Adobe Lightroom", "Adobe Lightroom Classic",
+        "Affinity Designer", "Affinity Photo", "Affinity Publisher", "Pixelmator Pro",
+        "Canva", "Blender", "Cinema 4D", "TouchDesigner", "Procreate", "Krita", "GIMP",
+        "Inkscape", "Spline"]
+domains = ["figma.com", "canva.com", "framer.com", "dribbble.com", "behance.net",
+           "color.adobe.com", "coolors.co", "fonts.google.com", "unsplash.com"]
+
+[[category]]
+name = "Video & Content"
+productivity = 1
+apps = ["DaVinci Resolve", "Final Cut Pro", "iMovie", "Adobe Premiere Pro",
+        "Adobe After Effects", "CapCut", "OBS", "OBS Studio", "Screen Studio",
+        "ScreenFlow", "Camtasia", "Motion", "HandBrake"]
+domains = ["studio.youtube.com", "creatorstudio.facebook.com"]
+
+# ================================================================ Neutral
 
 [[category]]
 name = "Kommunikation"
 productivity = 0
-apps = ["Mail", "Outlook", "Microsoft Outlook", "Slack", "Microsoft Teams", "Zoom",
-        "zoom.us", "Messages", "Nachrichten", "WhatsApp", "Telegram", "Signal", "FaceTime"]
-domains = ["mail.google.com", "outlook.office.com", "web.whatsapp.com", "teams.microsoft.com"]
-
-[[category]]
-name = "Discord"
-productivity = -1
-apps = ["Discord"]
-domains = ["discord.com"]
+apps = ["Mail", "Outlook", "Microsoft Outlook", "Spark", "Airmail", "Mimestream",
+        "Thunderbird", "Slack", "Microsoft Teams", "Zoom", "zoom.us", "Webex",
+        "Google Meet", "Messages", "Nachrichten", "WhatsApp", "Telegram", "Signal",
+        "Threema", "FaceTime", "Skype"]
+domains = ["mail.google.com", "outlook.office.com", "outlook.live.com",
+           "web.whatsapp.com", "web.telegram.org", "teams.microsoft.com",
+           "meet.google.com", "app.slack.com", "gmx.at", "gmx.net", "web.de"]
 
 [[category]]
 name = "Musik hören"
 productivity = 0
-apps = ["Spotify", "Music", "Musik", "SoundCloud"]
-domains = ["open.spotify.com", "soundcloud.com", "bandcamp.com"]
+apps = ["Spotify", "Music", "Musik", "SoundCloud", "Tidal", "Deezer", "Podcasts"]
+domains = ["open.spotify.com", "soundcloud.com", "bandcamp.com", "music.apple.com",
+           "music.youtube.com", "tidal.com", "deezer.com"]
+
+[[category]]
+name = "Erledigungen"
+productivity = 0
+apps = ["Wallet", "Banking"]
+domains = ["finanzonline.bmf.gv.at", "oesterreich.gv.at", "elster.de",
+           "paypal.com", "maps.google.com", "booking.com", "airbnb.com",
+           "bahn.de", "oebb.at", "post.at", "dhl.de"]
 
 [[category]]
 name = "System"
 productivity = 0
-apps = ["Finder", "System Settings", "Systemeinstellungen", "Activity Monitor",
-        "Aktivitätsanzeige", "App Store", "Installer"]
+apps = ["Finder", "System Settings", "Systemeinstellungen", "System Preferences",
+        "Activity Monitor", "Aktivitätsanzeige", "App Store",
+        "Installer", "Software Update", "Disk Utility", "Festplattendienstprogramm",
+        "Archive Utility", "Archivierungsprogramm", "The Unarchiver", "Keka",
+        "Calculator", "Rechner", "Font Book", "Schriftsammlung", "QuickTime Player",
+        "Image Capture", "Digitale Bilder", "Screenshot", "Bildschirmfoto",
+        "CleanMyMac", "AppCleaner", "Raycast", "Alfred", "Bartender", "BetterDisplay",
+        "Rectangle", "Magnet", "Dropbox", "Google Drive", "OneDrive",
+        "UserNotificationCenter", "SecurityAgent", "Notification Center",
+        "loginwindow", "coreautha", "Problem Reporter"]
+
+# ================================================================ Ablenkend
 
 [[category]]
 name = "Nachrichten & Lesen"
 productivity = -1
-domains = ["derstandard.at", "orf.at", "diepresse.com", "spiegel.de", "news.ycombinator.com",
-           "theverge.com"]
+domains = ["derstandard.at", "orf.at", "diepresse.com", "kurier.at", "krone.at",
+           "spiegel.de", "zeit.de", "faz.net", "sueddeutsche.de", "tagesschau.de",
+           "bild.de", "heise.de", "golem.de", "nytimes.com", "theguardian.com",
+           "bbc.com", "cnn.com", "news.ycombinator.com", "theverge.com", "medium.com",
+           "news.google.com"]
 
 [[category]]
-name = "Video & Streaming"
-productivity = -2
-apps = ["TV", "Netflix", "IINA", "VLC"]
-domains = ["netflix.com", "twitch.tv", "disneyplus.com", "primevideo.com"]
+name = "Chats & Communities"
+productivity = -1
+apps = ["Discord"]
+domains = ["discord.com", "discord.gg"]
 
 [[category]]
 name = "YouTube"
-productivity = -1        # gemischt: Tutorials vs. Zeitvertreib. Titel-Regeln unten präzisieren.
+productivity = -1        # gemischt: Tutorials vs. Zeitvertreib. Titel-Regel unten präzisiert.
 domains = ["youtube.com", "youtu.be"]
 
 [[category]]
 name = "YouTube-Tutorials"
 productivity = 1
-require_all = true       # Domain UND Titel müssen passen
+require_all = true       # Domain UND Titel müssen passen (braucht die Bildschirmaufnahme-Berechtigung)
 domains = ["youtube.com"]
-titles = ["(?i)(tutorial|mixing|mastering|sound design|fl studio|juce|c\\+\\+|python|vorlesung)"]
-
-[[category]]
-name = "Social Media"
-productivity = -2
-apps = ["Instagram", "TikTok"]
-domains = ["instagram.com", "tiktok.com", "x.com", "twitter.com", "reddit.com",
-           "facebook.com", "threads.net", "9gag.com"]
+titles = ["(?i)(tutorial|how to|anleitung|course|kurs|lecture|vorlesung|explained|erklärt|mixing|mastering|sound design|python|javascript|c\\+\\+|swift)"]
 
 [[category]]
 name = "Shopping"
 productivity = -1
-domains = ["amazon.de", "amazon.com", "willhaben.at", "thomann.de", "geizhals.at", "zalando.at"]
+apps = ["Amazon"]
+domains = ["amazon.de", "amazon.at", "amazon.com", "ebay.de", "ebay.at", "ebay.com",
+           "willhaben.at", "kleinanzeigen.de", "geizhals.at", "geizhals.de", "idealo.de",
+           "zalando.at", "zalando.de", "aboutyou.at", "aboutyou.de", "shein.com",
+           "temu.com", "aliexpress.com", "etsy.com", "ikea.com", "mediamarkt.at",
+           "mediamarkt.de", "thomann.de"]
+
+[[category]]
+name = "Video & Streaming"
+productivity = -2
+apps = ["TV", "Netflix", "Disney+", "Prime Video", "IINA", "VLC", "Infuse", "Plex"]
+domains = ["netflix.com", "twitch.tv", "disneyplus.com", "primevideo.com",
+           "tv.apple.com", "joyn.at", "joyn.de", "wow.tv", "crunchyroll.com",
+           "dazn.com", "plex.tv", "vimeo.com"]
+
+[[category]]
+name = "Social Media"
+productivity = -2
+apps = ["Instagram", "TikTok", "Facebook", "Pinterest", "Snapchat", "Threads",
+        "Bluesky", "Mastodon", "Ivory"]
+domains = ["instagram.com", "tiktok.com", "x.com", "twitter.com", "reddit.com",
+           "facebook.com", "threads.net", "bsky.app", "pinterest.com", "pinterest.at",
+           "snapchat.com", "tumblr.com", "9gag.com", "imgur.com"]
+
+[[category]]
+name = "Gaming"
+productivity = -2
+apps = ["Steam", "Epic Games Launcher", "Battle.net", "GOG Galaxy", "Minecraft",
+        "Minecraft Launcher", "Roblox", "RobloxPlayer", "League of Legends",
+        "Riot Client", "Games", "Spiele", "Chess", "Schach"]
+domains = ["store.steampowered.com", "steamcommunity.com", "epicgames.com", "roblox.com",
+           "chess.com", "lichess.org", "poki.com", "crazygames.com", "itch.io"]

@@ -67,23 +67,47 @@ es macht nie Bildschirmfotos.
 
 ## Kategorien anpassen
 
-**Einstellungen → Kategorien → Regeln bearbeiten …** öffnet
-`~/Library/Application Support/Zeitwerk/rules.toml`. Jede Kategorie hat einen
-Produktivitätswert von `-2` (sehr ablenkend) bis `2` (sehr produktiv) und passt
-über App-Namen, Domains oder Fenstertitel (Regex):
+Zeitwerk startet mit einer Vorlage, die viele verbreitete Apps und Websites
+kennt: Programmieren, Lernen, Office, Design, Video, Musikproduktion,
+Kommunikation, Social Media, Streaming, Gaming und mehr. **Was produktiv ist,
+hängt aber von dir ab.** Für eine Spieleentwicklerin ist Steam vielleicht Arbeit,
+für einen Social-Media-Manager Instagram. Nimm dir deshalb nach ein, zwei Tagen
+fünf Minuten Zeit für deine Regeln:
+
+1. **Übersicht → Kategorien:** Was unter **Nicht zugeordnet** steht, zählt neutral.
+   Das sind die Apps und Websites, die der Vorlage noch fehlen.
+2. **Einstellungen → Kategorien → Regeln bearbeiten …** öffnet
+   `~/Library/Application Support/Zeitwerk/rules.toml` im Texteditor.
+3. Fehlende Apps/Websites in eine passende Kategorie eintragen, Werte umstufen,
+   eigene Kategorien anlegen. Speichern genügt, Zeitwerk liest die Datei beim
+   nächsten Aktualisieren neu ein.
+
+Jede Kategorie hat einen Produktivitätswert von `-2` (sehr ablenkend) bis `2`
+(sehr produktiv) und passt über App-Namen, Domains oder Fenstertitel (Regex):
 
 ```toml
 [[category]]
-name = "Musikproduktion"
+name = "Fotografie"
 productivity = 2
-apps = ["FL Studio", "Ableton Live"]
-domains = ["splice.com"]
+apps = ["Adobe Lightroom Classic", "Capture One"]   # Name wie in der Menüleiste
+domains = ["500px.com"]                             # Subdomains zählen mit
 ```
 
-Mit `require_all = true` müssen alle Bedingungen gleichzeitig passen, z. B.
-YouTube **und** „Tutorial“ im Titel. Was noch keiner Regel entspricht, zeigt die
-Übersicht unter **Nicht zugeordnet**. Änderungen gelten auch für bereits erfasste
-Zeit.
+- **Eigene Uni/FH/Firma:** in „Lernen & Studium“ die Domain ergänzen, etwa
+  `meine-uni.at`. Dann zählen `moodle.meine-uni.at` und Co. automatisch mit.
+- **Umstufen:** einfach `productivity` ändern, zum Beispiel Gaming auf `2`, wenn
+  Spiele dein Job sind.
+- Regeln für Apps, die du nie benutzt, stören nicht. Sie greifen einfach nie.
+- Mit `require_all = true` müssen alle Bedingungen gleichzeitig passen, z. B.
+  YouTube **und** „Tutorial“ im Titel (braucht die Bildschirmaufnahme-Berechtigung,
+  siehe oben).
+- Domains ohne Pfad angeben (`linkedin.com`, nicht `linkedin.com/learning`):
+  Zeitwerk vergleicht nur den Host.
+
+Änderungen gelten auch für bereits erfasste Zeit.
+
+Deine `rules.toml` gehört dir: Updates von Zeitwerk überschreiben sie nicht. Die
+Vorlage im Repo wird nur beim allerersten Start kopiert.
 
 ## Produktivitätswert
 
