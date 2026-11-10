@@ -1,0 +1,5 @@
+pyobjc-framework-Cocoa>=10.0
+pyobjc-framework-Quartz>=10.0
+pyobjc-framework-WebKit>=10.0
+pandas>=2.1
+rumps>=0.4

@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Zeitwerk</title>
+<style>
+/* ------------------------------------------------------------------
+   Zeitwerk – Oberfläche nach den Apple Human Interface Guidelines
+   · nur die Systemschrift (SF Pro), macOS-Textgrößen
+   · Systemfarben mit eigenen Werten für Hell und Dunkel
+   · Akzentfarbe = die in den Systemeinstellungen gewählte
+   ------------------------------------------------------------------ */
+:root {
+  color-scheme: light;
+  --label: rgba(0, 0, 0, .85);
+  --label-2: rgba(0, 0, 0, .50);
+  --label-3: rgba(0, 0, 0, .26);
+  --sep: rgba(0, 0, 0, .10);
+  --fill: rgba(0, 0, 0, .05);
+  --fill-2: rgba(0, 0, 0, .08);
+  --bg: #ffffff;
+  --sidebar: #ebebed;             /* nur Vorschau; nativ scheint die Vibrancy durch */
+  --group: rgba(0, 0, 0, .028);
+  --popover: rgba(246, 246, 246, .92);
+  --shadow: 0 6px 24px rgba(0, 0, 0, .14), 0 0 0 .5px rgba(0, 0, 0, .12);
+  --accent: rgb(0, 136, 255);
+  --on-accent: #fff;
+  /* Systemfarben (HIG, Standardwerte hell) */
+  --blue: rgb(0, 136, 255);
+  --cyan: rgb(0, 192, 232);
+  --gray: rgb(142, 142, 147);
+  --orange: rgb(255, 141, 40);
+  --red: rgb(255, 56, 60);
+  --green: rgb(52, 199, 89);
+  --p2: var(--blue); --p1: var(--cyan); --n: var(--gray); --m1: var(--orange); --m2: var(--red);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --label: rgba(255, 255, 255, .86);
+    --label-2: rgba(255, 255, 255, .55);
+    --label-3: rgba(255, 255, 255, .25);
+    --sep: rgba(255, 255, 255, .10);
+    --fill: rgba(255, 255, 255, .07);
+    --fill-2: rgba(255, 255, 255, .11);
+    --bg: #1e1e1e;
+    --sidebar: #2b2b2d;
+    --group: rgba(255, 255, 255, .045);
+    --popover: rgba(48, 48, 50, .92);
+    --shadow: 0 8px 28px rgba(0, 0, 0, .5), 0 0 0 .5px rgba(255, 255, 255, .14);
+    --accent: rgb(0, 145, 255);
+    --blue: rgb(0, 145, 255);
+    --cyan: rgb(60, 211, 254);
+    --gray: rgb(142, 142, 147);
+    --orange: rgb(255, 146, 48);
+    --red: rgb(255, 66, 69);
+    --green: rgb(48, 209, 88);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --label: rgba(255, 255, 255, .86); --label-2: rgba(255, 255, 255, .55); --label-3: rgba(255, 255, 255, .25);
+  --sep: rgba(255, 255, 255, .10); --fill: rgba(255, 255, 255, .07); --fill-2: rgba(255, 255, 255, .11);
+  --bg: #1e1e1e; --sidebar: #2b2b2d; --group: rgba(255, 255, 255, .045); --popover: rgba(48, 48, 50, .92);
+  --shadow: 0 8px 28px rgba(0, 0, 0, .5), 0 0 0 .5px rgba(255, 255, 255, .14);
+  --accent: rgb(0, 145, 255); --blue: rgb(0, 145, 255); --cyan: rgb(60, 211, 254); --gray: rgb(142, 142, 147);
+  --orange: rgb(255, 146, 48); --red: rgb(255, 66, 69); --green: rgb(48, 209, 88);
+}
+/* Im nativen Fenster: Akzentfarbe des Systems, Seitenleiste durchscheinend */
+html.native { --sidebar: transparent; }
+html.native.has-accent { --accent: -apple-system-control-accent; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font: 13px/1.38 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  color: var(--label);
+  background: var(--sidebar);
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none; user-select: none;
+  cursor: default;
+  overflow: hidden;
+}
+.num { font-variant-numeric: tabular-nums; }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 1px; border-radius: 6px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* SF Symbols als Maske: Farbe kommt aus currentColor */
+.sym { display: inline-block; width: 16px; height: 16px; flex: none; background: currentColor;
+  -webkit-mask: var(--m) center / contain no-repeat; mask: var(--m) center / contain no-repeat; }
+
+/* ------------------------------------------------------------ Hauptfenster */
+.app { display: grid; grid-template-columns: 200px 1fr; height: 100vh; }
+.sidebar { padding: 10px 10px; overflow: auto; }
+.sidebar h2 { font-size: 11px; font-weight: 600; color: var(--label-2); margin: 10px 8px 4px; }
+.side-item {
+  display: flex; align-items: center; gap: 7px; width: 100%; height: 28px; padding: 0 8px;
+  border: 0; border-radius: 6px; background: none; text-align: left; font-size: 13px;
+}
+.side-item .sym { color: var(--accent); width: 15px; height: 15px; }
+.side-item[aria-current="page"] { background: var(--accent); color: var(--on-accent); }
+.side-item[aria-current="page"] .sym { color: var(--on-accent); }
+.side-item .key { margin-left: auto; font-size: 11px; color: var(--label-3); }
+.side-item[aria-current="page"] .key { color: rgba(255, 255, 255, .7); }
+
+.content { background: var(--bg); overflow: auto; -webkit-user-select: text; user-select: text;
+  border-left: .5px solid var(--sep); }
+.page { max-width: 900px; padding: 26px 32px 48px; }
+
+/* Einstieg: die Antwort auf "wie viel davon war produktiv?" */
+.lead { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: start; }
+.lead h1 { font-size: 26px; line-height: 1.22; font-weight: 700; letter-spacing: -.01em; margin: 0; max-width: 24ch; text-wrap: balance; }
+.lead h1 .soft { color: var(--label-2); font-weight: 600; }
+.lead p { margin: 8px 0 0; color: var(--label-2); max-width: 62ch; }
+
+.ring { width: 92px; text-align: center; }
+.ring svg { display: block; width: 92px; height: 92px; }
+.ring .track { stroke: var(--fill-2); }
+.ring .value { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset .6s ease; }
+.ring text { fill: var(--label); font-size: 24px; font-weight: 700; }
+.ring small { display: block; margin-top: 4px; font-size: 11px; color: var(--label-2); line-height: 1.25; }
+
+.split { margin-top: 22px; }
+.split-bar { display: flex; height: 14px; gap: 2px; border-radius: 7px; overflow: hidden; }
+.split-bar span { min-width: 3px; }
+.split-legend { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 10px; }
+.split-legend div { display: flex; align-items: baseline; gap: 6px; }
+.split-legend b { font-weight: 600; }
+.split-legend span { color: var(--label-2); }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex: none; align-self: center; }
+
+section { margin-top: 36px; }
+.section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+  padding-bottom: 8px; border-bottom: .5px solid var(--sep); }
+.section-head h2 { font-size: 15px; font-weight: 600; margin: 0; }
+.section-head p { margin: 2px 0 0; color: var(--label-2); font-size: 12px; max-width: 70ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--label-2); justify-content: flex-end; }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+
+/* Diagramm */
+.chart { position: relative; margin-top: 14px; }
+.chart svg { display: block; width: 100%; overflow: visible; }
+.chart .grid line { stroke: var(--sep); }
+.chart .axis text { fill: var(--label-2); font-size: 10px; }
+.chart .bar { outline: none; }
+.chart .bar .hit { fill: transparent; }
+.chart .bar:hover .hit, .chart .bar:focus-visible .hit { fill: var(--fill); }
+.chart .bar:focus-visible .hit { stroke: var(--accent); stroke-width: 2; }
+
+.tip { position: absolute; z-index: 5; pointer-events: none; min-width: 180px; padding: 8px 10px;
+  background: var(--popover); backdrop-filter: blur(24px) saturate(1.6); -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  box-shadow: var(--shadow); border-radius: 9px; font-size: 12px; opacity: 0; transform: translateY(2px);
+  transition: opacity .12s, transform .12s; }
+.tip.on { opacity: 1; transform: none; }
+.tip h4 { margin: 0 0 4px; font-size: 12px; font-weight: 600; }
+.tip div { display: flex; align-items: center; gap: 6px; }
+.tip div span:last-child { margin-left: auto; padding-left: 12px; }
+
+/* Listen (macOS-Gruppen) */
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.list { margin: 12px 0 0; padding: 4px 0; list-style: none; background: var(--group); border-radius: 10px;
+  border: .5px solid var(--sep); }
+.list li { display: grid; grid-template-columns: 20px 1fr auto; gap: 2px 10px; align-items: center;
+  padding: 7px 12px; position: relative; }
+.list li + li::before { content: ""; position: absolute; top: 0; left: 42px; right: 0; border-top: .5px solid var(--sep); }
+.list .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list .sub { grid-column: 2; font-size: 11px; color: var(--label-2); margin-top: -2px; }
+.list .time { grid-row: span 2; text-align: right; color: var(--label-2); }
+.list .meter { grid-column: 2 / 4; height: 3px; border-radius: 2px; background: var(--fill-2); margin-top: 4px; overflow: hidden; }
+.list .meter i { display: block; height: 100%; border-radius: 2px; }
+.list .icon { width: 20px; height: 20px; grid-row: span 2; display: grid; place-items: center; }
+.list .icon img { width: 20px; height: 20px; }
+.list .icon .sym { width: 15px; height: 15px; color: var(--label-2); }
+.list .swatch { width: 10px; height: 10px; border-radius: 3px; grid-row: span 2; justify-self: center; }
+
+/* Zeitleiste */
+.timeline { margin-top: 14px; }
+.timeline .row { display: grid; grid-template-columns: 128px 1fr; align-items: center; height: 24px; }
+.timeline .row > span { font-size: 12px; color: var(--label-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 10px; }
+.timeline .track { position: relative; height: 14px; border-radius: 3px; background: var(--fill); }
+.timeline .span { position: absolute; top: 0; height: 14px; border-radius: 3px; min-width: 2px; outline: none; }
+.timeline .span:hover, .timeline .span:focus-visible { filter: brightness(1.12); box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px currentColor; }
+.timeline .hours { display: grid; grid-template-columns: 128px 1fr; margin-top: 4px; }
+.timeline .hours div { position: relative; height: 14px; }
+.timeline .hours i { position: absolute; transform: translateX(-50%); font-style: normal; font-size: 10px; color: var(--label-2); }
+
+/* Hinweis & Knöpfe */
+.note { display: grid; grid-template-columns: 18px 1fr; gap: 10px; margin-top: 12px; padding: 12px 14px;
+  border-radius: 10px; background: var(--group); border: .5px solid var(--sep); }
+.note .sym { color: var(--label-2); margin-top: 1px; }
+.note p { margin: 0 0 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.chips span { padding: 2px 8px; border-radius: 5px; background: var(--fill-2); font-size: 12px; }
+.chips span em { font-style: normal; color: var(--label-2); margin-left: 4px; }
+.btn { height: 22px; padding: 0 10px; border-radius: 6px; border: 0; font-size: 13px;
+  background: var(--popover); box-shadow: 0 0 0 .5px var(--sep), 0 .5px 1.5px rgba(0, 0, 0, .12); }
+.btn:active { filter: brightness(.94); }
+.btn.primary { background: var(--accent); color: var(--on-accent); box-shadow: 0 .5px 1.5px rgba(0, 0, 0, .2); }
+.btn.large { height: 28px; padding: 0 16px; border-radius: 8px; }
+
+.empty { display: grid; place-items: center; text-align: center; min-height: 70vh; color: var(--label-2); }
+.empty .sym { width: 44px; height: 44px; color: var(--label-3); margin-bottom: 12px; }
+.empty h1 { color: var(--label); font-size: 17px; margin: 0 0 6px; }
+.empty p { margin: 0; max-width: 40ch; }
+
+/* ------------------------------------------------------------ Einstellungen */
+.settings { background: var(--bg); height: 100vh; display: flex; flex-direction: column; }
+html.native .settings { background: transparent; }
+.panes { display: flex; justify-content: center; gap: 2px; padding: 6px 0 8px; border-bottom: .5px solid var(--sep); }
+.pane-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 76px; padding: 5px 0 4px;
+  border: 0; border-radius: 7px; background: none; font-size: 11px; color: var(--label-2); }
+.pane-btn .sym { width: 22px; height: 22px; }
+.pane-btn[aria-selected="true"] { background: var(--fill-2); color: var(--label); }
+.pane-btn[aria-selected="true"] .sym { color: var(--accent); }
+.pane { padding: 20px 24px 24px; overflow: auto; }
+.form { background: var(--group); border: .5px solid var(--sep); border-radius: 10px; padding: 0 12px; }
+.form + .form { margin-top: 16px; }
+.field { display: flex; align-items: center; gap: 16px; min-height: 40px; padding: 8px 0; }
+.field + .field { border-top: .5px solid var(--sep); }
+.field label, .field .label { flex: 1; }
+.field small { display: block; color: var(--label-2); font-size: 11px; margin-top: 1px; }
+.field .status { display: inline-flex; align-items: center; gap: 5px; color: var(--label-2); font-size: 12px; }
+.field .status.ok .sym { color: var(--green); }
+.field .status.warn .sym { color: var(--orange); }
+.form-title { font-size: 13px; font-weight: 600; margin: 18px 4px 6px; }
+.form-title:first-child { margin-top: 0; }
+.form-foot { color: var(--label-2); font-size: 11px; margin: 6px 4px 0; }
+
+/* Schalter im macOS-Stil */
+.switch { position: relative; width: 32px; height: 18px; flex: none; }
+.switch input { position: absolute; inset: 0; opacity: 0; margin: 0; }
+.switch i { position: absolute; inset: 0; border-radius: 9px; background: var(--fill-2); transition: background .15s;
+  box-shadow: inset 0 0 0 .5px var(--sep); pointer-events: none; }
+.switch i::after { content: ""; position: absolute; top: 1.5px; left: 1.5px; width: 15px; height: 15px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .25), 0 0 0 .5px rgba(0, 0, 0, .06); transition: transform .15s; }
+.switch input:checked + i { background: var(--accent); }
+.switch input:checked + i::after { transform: translateX(14px); }
+.switch input:focus-visible + i { outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 1px; }
+.switch input:disabled + i { opacity: .45; }
+select.popup { height: 22px; padding: 0 6px; border-radius: 6px; border: 0; background: var(--popover);
+  box-shadow: 0 0 0 .5px var(--sep), 0 .5px 1.5px rgba(0, 0, 0, .12); }
+
+.cat-table { width: 100%; border-collapse: collapse; }
+.cat-table td { padding: 7px 0; border-top: .5px solid var(--sep); vertical-align: middle; }
+.cat-table tr:first-child td { border-top: 0; }
+.cat-table td:first-child { width: 18px; }
+.cat-table .ex { color: var(--label-2); font-size: 11px; display: block; max-width: 34ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat-table td:last-child { text-align: right; color: var(--label-2); font-size: 12px; white-space: nowrap; }
+
+/* ------------------------------------------------------------ Willkommen */
+.sheet-wrap { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center;
+  background: rgba(0, 0, 0, .18); }
+.sheet { width: min(460px, calc(100vw - 32px)); padding: 28px 28px 22px; border-radius: 14px;
+  background: var(--popover); backdrop-filter: blur(30px) saturate(1.8); -webkit-backdrop-filter: blur(30px) saturate(1.8);
+  box-shadow: var(--shadow); text-align: center; }
+.sheet .appicon { width: 72px; height: 72px; margin: 0 auto 10px; display: block; }
+.sheet h1 { font-size: 22px; margin: 0; }
+.sheet > p { margin: 6px auto 18px; color: var(--label-2); max-width: 36ch; }
+.features { text-align: left; display: grid; gap: 12px; margin-bottom: 18px; }
+.features div { display: grid; grid-template-columns: 28px 1fr; gap: 10px; }
+.features .sym { width: 22px; height: 22px; color: var(--accent); margin-top: 1px; }
+.features b { display: block; font-weight: 600; }
+.features span { color: var(--label-2); }
+.sheet .form { text-align: left; }
+.sheet .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: flex; overflow-x: auto; gap: 4px; padding: 8px; }
+  .sidebar h2 { display: none; }
+  .side-item { width: auto; white-space: nowrap; }
+  .side-item .key { display: none; }
+  .content { border-left: 0; }
+  .page { padding: 20px 16px 40px; }
+  .cols { grid-template-columns: 1fr; }
+  .lead { grid-template-columns: 1fr; }
+  .timeline .row, .timeline .hours { grid-template-columns: 90px 1fr; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div class="tip" id="tip" role="presentation"></div>
+
+<script>
+"use strict";
+/* ------------------------------------------------------------ Brücke zu Python
+   Nativ: window.webkit.messageHandlers.zeitwerk. In der Vorschau (Browser) beantwortet
+   ein eingebetteter Stub die Anfragen mit Beispieldaten. */
+const native = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.zeitwerk;
+const send = (msg) => native ? native.postMessage(JSON.stringify(msg)) : window.__preview && window.__preview(msg);
+const MODE = (location.hash || "#main").slice(1);
+
+if (native) document.documentElement.classList.add("native");
+if (window.CSS && CSS.supports("color", "-apple-system-control-accent")) document.documentElement.classList.add("has-accent");
+
+const state = { data: null, prefs: {}, symbols: {}, icons: {}, categories: [], permissions: {}, pane: null };
+
+/* ------------------------------------------------------------ Hilfen */
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const color = (lvl) => `var(--${lvl})`;
+
+/* Ersatz-Symbole für die Vorschau; nativ kommen echte SF Symbols aus Python */
+const FALLBACK = {
+  "sun.max": '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  "clock.arrow.circlepath": '<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/><path d="M12 7v5l3 2"/>',
+  "calendar": '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  "calendar.badge.clock": '<rect x="3" y="5" width="14" height="14" rx="3"/><path d="M3 10h14M7 3v4M13 3v4"/><circle cx="18" cy="17" r="4"/><path d="M18 15.5V17l1 1"/>',
+  "gearshape": '<circle cx="12" cy="12" r="3"/><path d="M12 2l1.5 2.6 3-.6.9 2.9 2.8 1-.6 3L21 12l-1.4 2.1.6 3-2.8 1-.9 2.9-3-.6L12 22l-1.5-2.6-3 .6-.9-2.9-2.8-1 .6-3L3 12l1.4-2.1-.6-3 2.8-1 .9-2.9 3 .6z"/>',
+  "record.circle": '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="#000"/>',
+  "tag": '<path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="8" cy="8" r="1.5"/>',
+  "globe": '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>',
+  "app": '<rect x="4" y="4" width="16" height="16" rx="4"/>',
+  "stopwatch": '<circle cx="12" cy="14" r="7.5"/><path d="M12 14V9.5M10 2.5h4M12 2.5v4M18 7l1.5-1.5"/>',
+  "lock.shield": '<path d="M12 2.5l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10v-6z"/><rect x="9" y="11" width="6" height="5" rx="1"/><path d="M10 11V9.5a2 2 0 0 1 4 0V11"/>',
+  "chart.bar": '<path d="M5 20V12M10 20V6M15 20v-9M20 20V9M3 21h18"/>',
+  "wand.and.stars": '<path d="M4 20L15 9M13 7l4 4M18 3v3M16.5 4.5h3M7 4v2M6 5h2M20 13v2M19 14h2"/>',
+  "info.circle": '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+  "checkmark.circle.fill": '<circle cx="12" cy="12" r="10" fill="#000" stroke="none"/><path d="M7.5 12.5l3 3 6-6.5" stroke="#fff"/>',
+  "exclamationmark.triangle.fill": '<path d="M12 3l10 17H2z" fill="#000" stroke="none"/><path d="M12 10v4.5M12 17v.5" stroke="#fff"/>',
+};
+function symbolURL(name) {
+  if (state.symbols[name]) return state.symbols[name];
+  const body = FALLBACK[name] || FALLBACK.app;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+  return "data:image/svg+xml," + encodeURIComponent(svg);
+}
+const sym = (name, label) => `<span class="sym" style="--m:url('${symbolURL(name)}')" ${label ? `role="img" aria-label="${esc(label)}"` : 'aria-hidden="true"'}></span>`;
+
+/* ------------------------------------------------------------ Tooltip */
+const tip = document.getElementById("tip");
+function showTip(html, anchor, container) {
+  tip.innerHTML = html;
+  const a = anchor.getBoundingClientRect();
+  tip.style.left = "0px"; tip.style.top = "0px";
+  tip.classList.add("on");
+  const t = tip.getBoundingClientRect();
+  let x = a.left + a.width / 2 - t.width / 2;
+  x = Math.max(8, Math.min(window.innerWidth - t.width - 8, x));
+  let y = a.top - t.height - 8;
+  if (y < 8) y = a.bottom + 8;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+const hideTip = () => tip.classList.remove("on");
+document.addEventListener("scroll", hideTip, true);
+
+/* ------------------------------------------------------------ Übersicht */
+const PERIODS = [
+  ["today", "Heute", "sun.max"],
+  ["yesterday", "Gestern", "clock.arrow.circlepath"],
+  ["week", "Letzte 7 Tage", "calendar"],
+  ["month", "Letzte 30 Tage", "calendar.badge.clock"],
+];
+
+function renderMain() {
+  const period = state.data?.period || state.prefs.last_period || "today";
+  const side = PERIODS.map(([k, label, s], i) => `
+    <button class="side-item" data-period="${k}" ${k === period ? 'aria-current="page"' : ""}>
+      ${sym(s)}<span>${label}</span><span class="key">⌘${i + 1}</span>
+    </button>`).join("");
+  document.getElementById("root").innerHTML = `
+    <div class="app">
+      <nav class="sidebar" aria-label="Zeitraum"><h2>Zeitraum</h2>${side}</nav>
+      <main class="content" id="content" tabindex="-1"><div class="page" id="page"></div></main>
+    </div>`;
+  document.querySelectorAll(".side-item").forEach((b) => b.addEventListener("click", () => load(b.dataset.period)));
+  renderPage();
+  if (state.welcome) renderWelcome();
+}
+
+function renderPage() {
+  const d = state.data, page = document.getElementById("page");
+  if (!page) return;
+  if (!d) { page.innerHTML = ""; return; }
+  if (d.empty) {
+    page.innerHTML = `<div class="empty"><div>${sym("stopwatch")}<h1>Noch keine Daten</h1><p>${esc(d.summary)}</p></div></div>`;
+    return;
+  }
+  const k = Object.fromEntries(d.kpis.map((x) => [x.id, x]));
+  const levelTotals = {};
+  d.chart.buckets.forEach((b) => Object.entries(b.segments).forEach(([lv, s]) => levelTotals[lv] = (levelTotals[lv] || 0) + s));
+  const grand = Object.values(levelTotals).reduce((a, b) => a + b, 0) || 1;
+  const groups = [
+    ["Produktiv", ["p2", "p1"], "p2"],
+    ["Neutral", ["n"], "n"],
+    ["Ablenkend", ["m1", "m2"], "m2"],
+  ];
+  const fmt = (s) => { const m = Math.round(s / 60), h = Math.floor(m / 60); return h ? `${h} h ${String(m % 60).padStart(2, "0")} min` : `${m} min`; };
+
+  const bar = d.levels.filter((l) => levelTotals[l.key]).map((l) =>
+    `<span style="flex:${levelTotals[l.key]};background:${color(l.key)}" title="${esc(l.label)}: ${fmt(levelTotals[l.key])}"></span>`).join("");
+  const legend = groups.map(([name, keys, c]) => {
+    const s = keys.reduce((a, x) => a + (levelTotals[x] || 0), 0);
+    return `<div><i class="dot" style="background:${color(c)}"></i><b>${name}</b> <span class="num">${fmt(s)} (${Math.round(s / grand * 100)} %)</span></div>`;
+  }).join("");
+
+  const score = k.score.score, C = 2 * Math.PI * 38;
+  page.innerHTML = `
+    <div class="lead">
+      <div>
+        <h1><span class="num">${esc(k.total.value)}</span> am Mac, <span class="soft">davon ${esc(k.p.detail)} produktiv.</span></h1>
+        <p>${esc(d.summary)}</p>
+      </div>
+      <div class="ring" role="img" aria-label="${esc(k.score.aria)}">
+        <svg viewBox="0 0 92 92"><circle class="track" cx="46" cy="46" r="38" fill="none" stroke-width="8"/>
+          <circle class="value" cx="46" cy="46" r="38" fill="none" stroke-width="8" transform="rotate(-90 46 46)"
+            stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - score / 100)}"/>
+          <text x="46" y="54" text-anchor="middle" class="num">${Math.round(score)}</text></svg>
+        <small>Produktivitäts&shy;wert von 100</small>
+      </div>
+    </div>
+    <div class="split" aria-label="Verteilung">
+      <div class="split-bar" aria-hidden="true">${bar}</div>
+      <div class="split-legend">${legend}</div>
+    </div>
+
+    <section aria-labelledby="h-chart">
+      <div class="section-head"><div><h2 id="h-chart">${esc(d.chart.title)}</h2><p>${esc(d.chart.summary)}</p></div>
+        <div class="legend">${d.levels.map((l) => `<span><i class="dot" style="background:${color(l.key)}"></i>${esc(l.label)}</span>`).join("")}</div></div>
+      <div class="chart" id="chart"></div>
+    </section>
+
+    <section class="cols">
+      <div aria-labelledby="h-cat">
+        <div class="section-head"><div><h2 id="h-cat">Kategorien</h2><p>Nach Zeit sortiert.</p></div></div>
+        <ul class="list">${d.categories.map((c) => `
+          <li><i class="swatch" style="background:${color(c.level)}"></i>
+            <span class="name">${esc(c.name)}</span><span class="time num">${esc(c.time)}</span>
+            <span class="sub">${esc(c.levelLabel)}</span>
+            <span class="meter"><i style="width:${(c.share * 100).toFixed(1)}%;background:${color(c.level)}"></i></span></li>`).join("")}
+        </ul>
+      </div>
+      <div aria-labelledby="h-apps">
+        <div class="section-head"><div><h2 id="h-apps">Apps und Websites</h2><p>Die zwölf mit der meisten Zeit.</p></div></div>
+        <ul class="list">${d.items.map((it) => `
+          <li><span class="icon">${it.web ? sym("globe") : state.icons[it.bundle_id] ? `<img alt="" src="${state.icons[it.bundle_id]}">` : sym("app")}</span>
+            <span class="name">${esc(it.label)}</span><span class="time num">${esc(it.time)}</span>
+            <span class="sub">${esc(it.category)}</span></li>`).join("")}
+        </ul>
+      </div>
+    </section>
+
+    ${d.timeline ? `<section aria-labelledby="h-tl">
+      <div class="section-head"><div><h2 id="h-tl">Zeitleiste</h2><p>Wann du woran gearbeitet hast. Kurze Unterbrechungen sind zusammengefasst.</p></div></div>
+      <div class="timeline" id="timeline"></div></section>` : ""}
+
+    ${d.uncategorized ? `<section aria-labelledby="h-unc">
+      <div class="section-head"><div><h2 id="h-unc">Nicht zugeordnet</h2><p>${esc(d.uncategorized.total)} passen auf keine Regel und zählen als neutral.</p></div></div>
+      <div class="note">${sym("info.circle")}<div>
+        <p>Ordne diese Apps einer Kategorie zu, dann zählen sie auch rückwirkend richtig.</p>
+        <div class="chips">${d.uncategorized.items.map((u) => `<span>${esc(u.label)}<em class="num">${esc(u.time)}</em></span>`).join("")}</div>
+        <button class="btn" data-cmd="openRules">Regeln bearbeiten …</button></div></div></section>` : ""}
+  `;
+  drawChart(document.getElementById("chart"), d);
+  if (d.timeline) drawTimeline(document.getElementById("timeline"), d.timeline);
+  page.querySelectorAll("[data-cmd]").forEach((b) => b.addEventListener("click", () => send({ cmd: b.dataset.cmd })));
+}
+
+/* Gestapelte Säulen: Basis bei null, gut lesbare Ticks, 2-px-Trenner zwischen Segmenten (HIG) */
+function drawChart(el, d) {
+  const ch = d.chart, n = ch.buckets.length, W = el.clientWidth || 800, H = 200;
+  const padL = 46, padB = 22, padT = 6, plotW = W - padL, plotH = H - padB - padT;
+  const unit = ch.unit === "min" ? 60 : 3600;
+  const maxV = Math.max(1, ...ch.buckets.map((b) => b.total / unit));
+  let step, top;
+  if (ch.unit === "min") { step = 15; top = 60; }          // feste Skala: eine Stunde hat 60 Minuten
+  else {
+    const steps = [1, 2, 3, 4, 5, 6];
+    step = steps.find((s) => maxV / s <= 4) || 6;
+    top = Math.max(step, Math.ceil(maxV / step) * step);
+  }
+  const y = (v) => padT + plotH - (v / top) * plotH;
+  const slot = plotW / n, bw = Math.min(28, slot * 0.62);
+  const order = ["p2", "p1", "n", "m1", "m2"];
+  let grid = "", bars = "";
+  for (let v = 0; v <= top; v += step) {
+    grid += `<line x1="${padL}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/>`;
+    grid += `<text x="${padL - 6}" y="${y(v) + 3}" text-anchor="end">${v} ${ch.unit}</text>`;
+  }
+  ch.buckets.forEach((b, i) => {
+    const x = padL + slot * i + (slot - bw) / 2;
+    let acc = 0, segs = "";
+    const present = order.filter((k) => b.segments[k]);
+    present.forEach((k, j) => {
+      const v = b.segments[k] / unit, y0 = y(acc), y1 = y(acc + v);
+      const h = Math.max(0, y0 - y1 - (j < present.length - 1 ? 2 : 0)); // 2 px Lücke = Trenner
+      const r = j === present.length - 1 ? Math.min(3, h / 2) : 0;
+      segs += r ? `<path d="M${x},${y0} v${-(h - r)} q0,${-r} ${r},${-r} h${bw - 2 * r} q${r},0 ${r},${r} v${h - r} z" fill="${color(k)}"/>`
+                : `<rect x="${x}" y="${y0 - h}" width="${bw}" height="${h}" fill="${color(k)}"/>`;
+      acc += v;
+    });
+    const label = ch.kind === "hours" ? (i % 3 === 0 ? b.label : "") : (n > 10 ? (i % 3 === 0 || i === n - 1 ? b.short : "") : `${b.label} ${b.short}`);
+    bars += `<g class="bar" tabindex="0" role="img" aria-label="${esc(b.aria)}" data-i="${i}">
+      <rect class="hit" x="${padL + slot * i + 1}" y="${padT}" width="${slot - 2}" height="${plotH}" rx="4"/>${segs}
+      <text x="${padL + slot * i + slot / 2}" y="${H - 6}" text-anchor="middle" class="axis-label">${label}</text></g>`;
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="group" aria-label="${esc(ch.title)}. ${esc(ch.summary)}">
+    <g class="grid axis">${grid}</g><g class="axis">${bars}</g></svg>`;
+  const fmt = (s) => { const m = Math.round(s / 60), h = Math.floor(m / 60); return h ? `${h} h ${String(m % 60).padStart(2, "0")} min` : `${m} min`; };
+  el.querySelectorAll(".bar").forEach((g) => {
+    const b = ch.buckets[+g.dataset.i];
+    const html = () => `<h4>${esc(b.aria.split(":")[0])}</h4>` + (b.total ? d.levels.filter((l) => b.segments[l.key]).map((l) =>
+      `<div><i class="dot" style="background:${color(l.key)}"></i><span>${esc(l.label)}</span><span class="num">${fmt(b.segments[l.key])}</span></div>`).join("")
+      : `<div><span>Nichts erfasst</span></div>`);
+    const on = () => showTip(html(), g.querySelector(".hit"));
+    g.addEventListener("mouseenter", on); g.addEventListener("focus", on);
+    g.addEventListener("mouseleave", hideTip); g.addEventListener("blur", hideTip);
+  });
+}
+
+function drawTimeline(el, tl) {
+  const a = tl.start_hour * 60, z = tl.end_hour * 60, span = Math.max(60, z - a);
+  const pos = (m) => ((m - a) / span * 100).toFixed(3) + "%";
+  const rows = tl.lanes.map((lane) => `<div class="row"><span>${esc(lane.category)}</span><div class="track">${
+    lane.spans.map((s) => `<i class="span" tabindex="0" role="img" aria-label="${esc(s.text)}" data-text="${esc(s.text)}" data-label="${esc(s.label)}"
+      style="left:${pos(s.s)};width:calc(${pos(s.e)} - ${pos(s.s)});background:${color(lane.level)};color:${color(lane.level)}"></i>`).join("")}</div></div>`).join("");
+  let ticks = "";
+  const every = span > 12 * 60 ? 3 : span > 6 * 60 ? 2 : 1;
+  for (let h = tl.start_hour; h <= tl.end_hour; h += every) ticks += `<i style="left:${pos(h * 60)}">${h}:00</i>`;
+  el.innerHTML = rows + `<div class="hours"><span></span><div>${ticks}</div></div>`;
+  el.querySelectorAll(".span").forEach((s) => {
+    const on = () => showTip(`<h4>${s.dataset.text.split(",")[0]}</h4><div><span>${s.dataset.text.split(",").slice(1).join(",").trim()}</span></div><div><span style="color:var(--label-2)">Meist ${s.dataset.label}</span></div>`, s);
+    s.addEventListener("mouseenter", on); s.addEventListener("focus", on);
+    s.addEventListener("mouseleave", hideTip); s.addEventListener("blur", hideTip);
+  });
+}
+
+function load(period) {
+  state.prefs.last_period = period;
+  document.querySelectorAll(".side-item").forEach((b) => b.dataset.period === period ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
+  send({ cmd: "load", period });
+}
+
+/* ------------------------------------------------------------ Einstellungen */
+const PANES = [
+  ["general", "Allgemein", "gearshape"],
+  ["tracking", "Erfassung", "record.circle"],
+  ["categories", "Kategorien", "tag"],
+];
+const toggle = (key, label, help, disabled) => `
+  <div class="field"><label for="f-${key}">${label}${help ? `<small>${help}</small>` : ""}</label>
+    <span class="switch"><input type="checkbox" role="switch" id="f-${key}" data-pref="${key}" ${state.prefs[key] ? "checked" : ""} ${disabled ? "disabled" : ""}><i></i></span></div>`;
+
+function renderSettings() {
+  const pane = state.pane || state.prefs.last_settings_pane || "general";
+  state.pane = pane;
+  const p = state.prefs, perm = state.permissions;
+  let body = "";
+  if (pane === "general") {
+    body = `
+      <div class="form">
+        ${toggle("show_menubar_extra", "Symbol in der Menüleiste anzeigen", "Ausgeblendet öffnest du Zeitwerk über Spotlight oder den Programme-Ordner.")}
+        ${toggle("show_score_in_menubar", "Produktivitätswert neben dem Symbol anzeigen", "", !p.show_menubar_extra)}
+        ${toggle("show_desk_widget", "Widget auf dem Schreibtisch anzeigen", "Zeigt deinen Tag direkt auf dem Schreibtisch. Ziehen verschiebt es, ein Klick öffnet die Übersicht.")}
+        ${toggle("open_at_login", "Beim Anmelden öffnen", "")}
+      </div>`;
+  } else if (pane === "tracking") {
+    const idle = [[60, "1 Minute"], [180, "3 Minuten"], [300, "5 Minuten"], [600, "10 Minuten"]]
+      .map(([v, l]) => `<option value="${v}" ${+p.idle_threshold_seconds === v ? "selected" : ""}>${l}</option>`).join("");
+    const status = (ok, yes, no) => `<span class="status ${ok ? "ok" : "warn"}">${sym(ok ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")}${ok ? yes : no}</span>`;
+    body = `
+      <div class="form">
+        <div class="field"><label for="f-idle">Als Pause zählen nach<small>Zeit ohne Maus- und Tastatureingabe.</small></label>
+          <select class="popup" id="f-idle" data-pref="idle_threshold_seconds">${idle}</select></div>
+        ${toggle("store_titles", "Fenstertitel speichern", "Ermöglicht genauere Regeln, etwa „Tutorial“ im YouTube-Titel.")}
+        ${toggle("store_urls", "Websites erfassen", "Speichert nur die Domain, nie die vollständige Adresse.")}
+      </div>
+      <h3 class="form-title">Berechtigungen</h3>
+      <div class="form">
+        <div class="field"><div class="label">Bildschirmaufnahme<small>Nötig für Fenstertitel. Zeitwerk macht keine Bildschirmfotos.</small></div>
+          ${perm.screen === undefined ? "" : status(perm.screen, "Erlaubt", "Nicht erlaubt")}
+          <button class="btn" data-open="screen">Öffnen …</button></div>
+        <div class="field"><div class="label">Automation<small>Nötig, um die Domain im aktiven Browser-Tab zu lesen.</small></div>
+          <button class="btn" data-open="automation">Öffnen …</button></div>
+      </div>
+      <p class="form-foot">Für Apps unter „private_apps“ in den Regeln werden nie Titel oder Websites gespeichert.</p>`;
+  } else {
+    body = `
+      <div class="form"><table class="cat-table"><tbody>${state.categories.map((c) => `
+        <tr><td><i class="dot" style="background:${color(c.level)}"></i></td>
+          <td>${esc(c.name)}<span class="ex">${esc(c.examples)}</span></td><td>${esc(c.levelLabel)}</td></tr>`).join("")}
+      </tbody></table></div>
+      <div class="actions" style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+        <span class="form-foot" style="margin:0">Änderungen gelten auch für bereits erfasste Zeit.</span>
+        <button class="btn" data-cmd="openRules">Regeln bearbeiten …</button></div>`;
+  }
+  document.getElementById("root").innerHTML = `
+    <div class="settings">
+      <div class="panes" role="tablist" aria-label="Einstellungen">${PANES.map(([k, l, s]) =>
+        `<button class="pane-btn" role="tab" aria-selected="${k === pane}" data-pane="${k}">${sym(s)}${l}</button>`).join("")}</div>
+      <div class="pane" role="tabpanel">${body}</div>
+    </div>`;
+  const title = PANES.find((x) => x[0] === pane)[1];
+  // HIG: Fenstertitel = sichtbarer Bereich, Fenstergröße passt sich dem Bereich an
+  requestAnimationFrame(() => send({ cmd: "title", title, height: document.querySelector(".panes").offsetHeight + document.querySelector(".pane").scrollHeight }));
+  document.querySelectorAll(".pane-btn").forEach((b) => b.addEventListener("click", () => {
+    state.pane = b.dataset.pane; send({ cmd: "setPref", key: "last_settings_pane", value: state.pane }); renderSettings();
+  }));
+  wirePrefs(document);
+}
+
+function wirePrefs(scope) {
+  scope.querySelectorAll("[data-pref]").forEach((inp) => inp.addEventListener("change", () => {
+    const value = inp.type === "checkbox" ? inp.checked : +inp.value;
+    state.prefs[inp.dataset.pref] = value;
+    send({ cmd: "setPref", key: inp.dataset.pref, value });
+    if (inp.dataset.pref === "show_menubar_extra" && MODE === "settings") renderSettings();
+  }));
+  scope.querySelectorAll("[data-cmd]").forEach((b) => b.addEventListener("click", () => send({ cmd: b.dataset.cmd })));
+  scope.querySelectorAll("[data-open]").forEach((b) => b.addEventListener("click", () => send({ cmd: "openPrivacy", pane: b.dataset.open })));
+}
+
+/* ------------------------------------------------------------ Willkommen (erster Start) */
+function renderWelcome() {
+  const wrap = document.createElement("div");
+  wrap.className = "sheet-wrap";
+  wrap.innerHTML = `
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="w-title">
+      ${state.appIcon ? `<img class="appicon" alt="" src="${state.appIcon}">` : `<span class="sym appicon" style="--m:url('${symbolURL("stopwatch")}');color:var(--accent)"></span>`}
+      <h1 id="w-title">Willkommen bei Zeitwerk</h1>
+      <p>Zeitwerk zeigt dir, wie viel deiner Zeit am Mac produktiv war, ohne dass du etwas starten musst.</p>
+      <div class="features">
+        <div>${sym("wand.and.stars")}<p style="margin:0"><b>Erfasst automatisch</b><span>Aktive App, Fenster und Website. Pausen und Ruhezustand zählen nicht.</span></p></div>
+        <div>${sym("chart.bar")}<p style="margin:0"><b>Ordnet ehrlich ein</b><span>Von sehr produktiv bis sehr ablenkend, nach Regeln, die du selbst bestimmst.</span></p></div>
+        <div>${sym("lock.shield")}<p style="margin:0"><b>Bleibt auf deinem Mac</b><span>Keine Cloud, kein Konto, keine Bildschirmfotos.</span></p></div>
+      </div>
+      <div class="form">
+        ${toggle("show_menubar_extra", "Symbol in der Menüleiste anzeigen", "")}
+        ${toggle("open_at_login", "Beim Anmelden öffnen", "")}
+      </div>
+      <div class="actions">
+        <button class="btn large" data-open="screen">Berechtigungen …</button>
+        <button class="btn large primary" id="w-done">Los geht’s</button>
+      </div>
+    </div>`;
+  document.body.appendChild(wrap);
+  wirePrefs(wrap);
+  const done = wrap.querySelector("#w-done");
+  done.focus();
+  const finish = () => { state.welcome = false; wrap.remove(); send({ cmd: "setPref", key: "onboarded", value: true }); };
+  done.addEventListener("click", finish);
+  wrap.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.tagName !== "INPUT") finish(); });
+}
+
+/* ------------------------------------------------------------ Tastatur */
+document.addEventListener("keydown", (e) => {
+  if (MODE !== "main") return;
+  if (e.metaKey && /^[1-4]$/.test(e.key)) { e.preventDefault(); load(PERIODS[+e.key - 1][0]); }
+  if (e.target.classList?.contains("side-item") && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
+    const items = [...document.querySelectorAll(".side-item")];
+    const i = items.indexOf(e.target) + (e.key === "ArrowDown" ? 1 : -1);
+    if (items[i]) { items[i].focus(); load(items[i].dataset.period); }
+    e.preventDefault();
+  }
+});
+let resizeTimer;
+window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => MODE === "main" && renderPage(), 120); });
+
+/* ------------------------------------------------------------ API für Python */
+window.Zeitwerk = {
+  render(data) {
+    state.data = data;
+    renderPage();
+    document.querySelectorAll(".side-item").forEach((b) => b.dataset.period === data.period ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
+    send({ cmd: "title", title: data.title, subtitle: data.subtitle });
+    document.getElementById("content")?.scrollTo(0, 0);
+  },
+  init(opts) {
+    Object.assign(state, opts);   // prefs, symbols, icons, categories, permissions, appIcon, welcome
+    if (MODE === "settings") renderSettings();
+    else { renderMain(); send({ cmd: "load", period: state.prefs.last_period || "today" }); }
+  },
+  setPrefs(p) { state.prefs = p; if (MODE === "settings") renderSettings(); },
+  setIcons(icons) { Object.assign(state.icons, icons); if (MODE === "main") renderPage(); },
+  setPermissions(perm) { state.permissions = perm; if (MODE === "settings") renderSettings(); },
+};
+send({ cmd: "ready", mode: MODE });
+</script>
+</body>
+</html>

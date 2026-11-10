@@ -1,0 +1,133 @@
+# Zeitwerk – Regeln
+# ------------------------------------------------------------------
+# Diese Datei bestimmt, welche App/Website zu welcher Kategorie gehört
+# und wie produktiv sie zählt. Die Regeln werden beim Auswerten
+# angewendet, also gelten Änderungen auch rückwirkend für alte Daten.
+#
+# productivity:  2 = sehr produktiv, 1 = produktiv, 0 = neutral,
+#               -1 = ablenkend,     -2 = sehr ablenkend
+#
+# Treffer-Arten (Groß-/Kleinschreibung egal):
+#   apps    = App-Name ("FL Studio") oder Bundle-ID ("com.apple.Safari")
+#   domains = Domain inkl. Subdomains ("youtube.com" trifft auch "m.youtube.com")
+#   titles  = Regex auf den Fenstertitel ("(?i)vorlesung")
+#   require_all = true → alle angegebenen Arten müssen gleichzeitig passen
+#
+# Gewichtung: domain = 3, title = 2, app = 1. Passen mehrere Arten,
+# werden sie addiert. Die Kategorie mit der höchsten Summe gewinnt,
+# bei Gleichstand die, die weiter oben steht.
+
+[settings]
+# Pausen-Erkennung, Fenstertitel und Websites stellst du in Zeitwerk unter
+# Einstellungen (⌘,) ein. Hier nur, was es dort nicht gibt:
+sample_interval_seconds = 5
+# Für diese Apps werden weder Titel noch URLs gespeichert:
+private_apps = ["1Password", "Keychain Access", "Schlüsselbundverwaltung"]
+
+[[category]]
+name = "Musikproduktion"
+productivity = 2
+apps = ["FL Studio", "Ableton Live", "Logic Pro", "Logic Pro X", "Bitwig Studio",
+        "Serum", "Kontakt", "Splice", "iZotope RX", "Melodyne"]
+domains = ["splice.com", "kvraudio.com"]
+
+[[category]]
+name = "Programmieren"
+productivity = 2
+apps = ["Code", "Visual Studio Code", "Cursor", "Xcode", "CLion", "PyCharm",
+        "IntelliJ IDEA", "Terminal", "iTerm2", "Warp", "Ghostty", "Sublime Text",
+        "Projucer", "Docker Desktop", "TablePlus", "DBeaver"]
+domains = ["github.com", "gitlab.com", "stackoverflow.com", "docs.python.org",
+           "developer.apple.com", "juce.com", "cppreference.com", "en.cppreference.com",
+           "pandas.pydata.org", "streamlit.io"]
+
+[[category]]
+name = "Studium"
+productivity = 2
+apps = ["Preview", "Vorschau", "GoodNotes", "Notability", "Anki", "Microsoft Word",
+        "Microsoft Excel", "Microsoft PowerPoint", "Pages", "Numbers", "Keynote", "Zotero"]
+# Eigene Uni-/FH-Domain ergänzen (Subdomains wie moodle.… zählen automatisch mit)
+domains = ["moodle.org", "uni.example",
+           "wolframalpha.com", "khanacademy.org", "geogebra.org"]
+titles = ["(?i)vorlesung", "(?i)übung", "(?i)studienbrief", "(?i)\\bskript"]
+
+[[category]]
+name = "KI-Tools"
+productivity = 1
+apps = ["Claude", "ChatGPT"]
+domains = ["claude.ai", "chatgpt.com", "perplexity.ai"]
+
+[[category]]
+name = "Notizen & Planung"
+productivity = 1
+apps = ["Notion", "Obsidian", "Notes", "Notizen", "Reminders", "Erinnerungen",
+        "Calendar", "Kalender", "Things", "Todoist"]
+domains = ["notion.so", "calendar.google.com"]
+
+[[category]]
+name = "Design"
+productivity = 1
+apps = ["Figma", "Adobe Photoshop", "Adobe Illustrator", "Affinity Designer",
+        "Affinity Photo", "Pixelmator Pro", "Blender", "TouchDesigner"]
+domains = ["figma.com"]
+
+[[category]]
+name = "Kommunikation"
+productivity = 0
+apps = ["Mail", "Outlook", "Microsoft Outlook", "Slack", "Microsoft Teams", "Zoom",
+        "zoom.us", "Messages", "Nachrichten", "WhatsApp", "Telegram", "Signal", "FaceTime"]
+domains = ["mail.google.com", "outlook.office.com", "web.whatsapp.com", "teams.microsoft.com"]
+
+[[category]]
+name = "Discord"
+productivity = -1
+apps = ["Discord"]
+domains = ["discord.com"]
+
+[[category]]
+name = "Musik hören"
+productivity = 0
+apps = ["Spotify", "Music", "Musik", "SoundCloud"]
+domains = ["open.spotify.com", "soundcloud.com", "bandcamp.com"]
+
+[[category]]
+name = "System"
+productivity = 0
+apps = ["Finder", "System Settings", "Systemeinstellungen", "Activity Monitor",
+        "Aktivitätsanzeige", "App Store", "Installer"]
+
+[[category]]
+name = "Nachrichten & Lesen"
+productivity = -1
+domains = ["derstandard.at", "orf.at", "diepresse.com", "spiegel.de", "news.ycombinator.com",
+           "theverge.com"]
+
+[[category]]
+name = "Video & Streaming"
+productivity = -2
+apps = ["TV", "Netflix", "IINA", "VLC"]
+domains = ["netflix.com", "twitch.tv", "disneyplus.com", "primevideo.com"]
+
+[[category]]
+name = "YouTube"
+productivity = -1        # gemischt: Tutorials vs. Zeitvertreib. Titel-Regeln unten präzisieren.
+domains = ["youtube.com", "youtu.be"]
+
+[[category]]
+name = "YouTube-Tutorials"
+productivity = 1
+require_all = true       # Domain UND Titel müssen passen
+domains = ["youtube.com"]
+titles = ["(?i)(tutorial|mixing|mastering|sound design|fl studio|juce|c\\+\\+|python|vorlesung)"]
+
+[[category]]
+name = "Social Media"
+productivity = -2
+apps = ["Instagram", "TikTok"]
+domains = ["instagram.com", "tiktok.com", "x.com", "twitter.com", "reddit.com",
+           "facebook.com", "threads.net", "9gag.com"]
+
+[[category]]
+name = "Shopping"
+productivity = -1
+domains = ["amazon.de", "amazon.com", "willhaben.at", "thomann.de", "geizhals.at", "zalando.at"]
