@@ -24,33 +24,26 @@ Gestaltet nach den [Apple Human Interface Guidelines](https://developer.apple.co
 
 ## Installation
 
-1. `Zeitwerk-Installer-<version>.zip` herunterladen und doppelklicken. Es entsteht
-   **Zeitwerk installieren**.
-2. **Zeitwerk installieren** öffnen und „Installieren“ wählen.
+Voraussetzungen: macOS 12 oder neuer und Python 3.11+ (`python3 --version`;
+falls es fehlt: [python.org](https://www.python.org/downloads/) oder
+`brew install python`).
 
-Der Installer legt Zeitwerk in deinen Programme-Ordner und lädt beim ersten Mal
-ein eigenes Python mit den nötigen Bibliotheken (etwa 150 MB, 1–2 Minuten).
-Homebrew oder das Terminal brauchst du nicht. Danach kannst du den Installer
-löschen.
+```bash
+git clone https://github.com/NovakBeslic/zeitwerk.git
+cd zeitwerk
+./install.sh
+```
 
-**Wenn macOS das Öffnen blockiert:** Der Installer ist nicht bei Apple
-registriert, deshalb warnt macOS beim ersten Öffnen.
+Beim ersten Mal legt `install.sh` eine eigene Python-Umgebung unter
+`~/Library/Application Support/Zeitwerk/runtime` an (etwa 1–2 Minuten), baut
+`/Applications/Zeitwerk.app` und startet Zeitwerk. Ein Willkommensfenster
+fragt nach Menüleisten-Symbol und Autostart. Die Aufzeichnung beginnt bei null,
+und die Regelvorlage wird in deinen Datenordner kopiert (siehe
+[Kategorien anpassen](#kategorien-anpassen)).
 
-- macOS 15 und neuer: Meldung schließen, dann Systemeinstellungen →
-  Datenschutz & Sicherheit → ganz unten bei „Zeitwerk installieren“ auf
-  **Dennoch öffnen** klicken und bestätigen.
-- macOS 14 und älter: im Finder mit gedrückter ctrl-Taste auf
-  „Zeitwerk installieren“ klicken → **Öffnen** → **Öffnen**.
-
-Das ist nur einmal nötig. Die installierte Zeitwerk-App entsteht auf deinem Mac
-und startet danach ohne Warnung.
-
-**Aktualisieren** funktioniert genauso: neuen Installer öffnen,
-„Aktualisieren“ wählen. Erfasste Zeit, Regeln und Einstellungen bleiben
-erhalten. Nach einem Update musst du die Bildschirmaufnahme eventuell neu
-erlauben, weil macOS die neue Version als neue App sieht.
-
-Protokoll des Installers: `~/Library/Logs/Zeitwerk-Installer.log`.
+**Aktualisieren:** `git pull` und noch einmal `./install.sh`. Erfasste Zeit,
+Regeln und Einstellungen bleiben erhalten. Nach einem Update musst du die
+Bildschirmaufnahme eventuell neu erlauben.
 
 ## Berechtigungen
 
@@ -116,16 +109,11 @@ Vorlage im Repo wird nur beim allerersten Start kopiert.
 
 ## Deinstallieren
 
-Installer öffnen → **Deinstallieren …** → „Daten behalten“ oder „Alles löschen“.
-
-## Installer selbst bauen
-
-```bash
-python3 tools/build_installer.py   # → dist/Zeitwerk-Installer-<version>.zip
-```
-
-Nur Standardbibliothek, läuft auf macOS und Linux. `./install.sh` baut den
-Installer und öffnet ihn direkt.
+1. Zeitwerk über die Menüleiste beenden (**Zeitwerk beenden**).
+2. `/Applications/Zeitwerk.app` löschen und den Autostart entfernen:
+   `rm -f ~/Library/LaunchAgents/at.kyrie.zeitwerk.plist`
+3. Optional alle Daten (erfasste Zeit, Regeln, Einstellungen, Python-Umgebung)
+   löschen: `rm -rf ~/Library/Application\ Support/Zeitwerk`
 
 ## Aufbau
 
@@ -141,26 +129,26 @@ Installer und öffnet ihn direkt.
 | `zeitwerk/tracker.py` | Messschleife alle 5 s, Pausen- und Schlaf-Erkennung |
 | `zeitwerk/db.py` | SQLite, verlängert Einträge statt jede Messung einzeln zu speichern |
 | `zeitwerk/classify.py` | wendet `rules.toml` an |
-| `installer/installer.sh` | Installer: Dialoge, Python über uv, App bauen, Aktualisieren, Deinstallieren |
-| `tools/build_installer.py` | baut „Zeitwerk installieren.app“ und das Zip |
-| `tests/` | `python -m pytest tests` (der Installer wird mit Attrappen getestet) |
+| `zeitwerk/summary.py` | Tageswerte für Menü und Widget |
+| `zeitwerk/deskwidget.py` | Widget auf dem Schreibtisch |
+| `install.sh` | installiert bzw. aktualisiert die App aus diesem Repo |
+| `macos/` | Info.plist, Startskript und Symbol der App |
+| `tests/` | `python -m pytest tests` |
 
 ## Entwicklung
 
 Der Quellcode liegt in diesem Repo, nicht in der App. Ablauf:
 
 1. Code hier ändern.
-2. `./deploy.sh` – lässt die Tests laufen, kopiert den Code nach
-   `/Applications/Zeitwerk.app` und startet Zeitwerk neu.
+2. `./install.sh` – lässt die Tests laufen (falls pytest installiert ist),
+   kopiert den Code nach `/Applications/Zeitwerk.app` und startet Zeitwerk neu.
 3. Committen.
 
 Tests von Hand: `"$HOME/Library/Application Support/Zeitwerk/runtime/venv/bin/python" -m pytest tests`
 (pytest muss dafür in Zeitwerks Python installiert sein).
 
-- `zeitwerk/` – der Code (Menüleiste, Tracker, Auswertung, Widget auf dem Schreibtisch)
-- `macos/` – Info.plist, Startskript und Symbol der App
-- `rules.toml` – Vorlage für neue Installationen. Deine eigenen Regeln liegen in
-  `~/Library/Application Support/Zeitwerk/rules.toml`.
+`rules.toml` im Repo ist nur die Vorlage für neue Installationen. Deine eigenen
+Regeln liegen in `~/Library/Application Support/Zeitwerk/rules.toml`.
 
 ## Lizenz
 
